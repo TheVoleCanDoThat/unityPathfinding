@@ -7,6 +7,7 @@ public class PathfindingTileGrid : MonoBehaviour
 {
     [SerializeField]
     [Range(0.5f, 1f)] float TileGizmoSize = 1;
+    [SerializeField] Color defaultTileColor = Color.white;
     public bool displayGridArea;
     public bool displayGridGizmos;
 
@@ -24,7 +25,7 @@ public class PathfindingTileGrid : MonoBehaviour
 
     PathfindingTile[,] tileGrid;
 
-
+    
     private void Awake()
     {
         tileDiameter = tileRadius * 2;
@@ -47,29 +48,37 @@ public class PathfindingTileGrid : MonoBehaviour
             {
                 //Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMin, penaltyMax, t.movementPenalty));
 
-                Gizmos.color = (t.IsWalkable()) ? Color.white : Color.red;
+                Gizmos.color = (t.IsWalkable()) ? defaultTileColor : Color.red;
 
                 Gizmos.DrawCube(t.GetWorldPos(), Vector3.one * (tileDiameter * TileGizmoSize));
             }
         }
 
     }
+    
     public PathfindingTile TileFromWorldPoint(Vector3 worldPos)
     {
-        float percentX = (worldPos.x + gridWorldSize.x * .5f) / gridWorldSize.x;
-        float percentY = (worldPos.y + gridWorldSize.y * .5f) / gridWorldSize.y;
-
+        if (tileGrid == null || tileGrid.Length == 0) return null;
+        //Calculate the actual size with gridTile Diamater
+        float actualGridSizeX = gridSizeX*tileDiameter;
+        float actualGridSizeY = gridSizeY *tileDiameter;
+        //Get the percentage where we are on the grid
+        float percentX = ((worldPos.x-transform.position.x) + actualGridSizeX * .5f) / actualGridSizeX;
+        float percentY = (worldPos.y - transform.position.y + actualGridSizeY * .5f) / actualGridSizeY;
         percentX = Mathf.Clamp01(percentX);
         percentY = Mathf.Clamp01(percentY);
-
-        int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
-        int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
+        
+        float TileDiameterXAsPercent = tileDiameter / gridSizeX;
+        float TileDiameterYAsPercent = tileDiameter / gridSizeY;
+        //Calculate the x,y coordiantes with one tile as percentage and the current percentage
+        int x = Mathf.Clamp(Mathf.FloorToInt(percentX / TileDiameterXAsPercent), 0, gridSizeX - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(percentY / TileDiameterYAsPercent), 0, gridSizeY - 1);
 
         return tileGrid[x, y];
-
     }
     public Vector3 WorldPointFromTile(int2 tileCoord)
     {
+        if (tileGrid == null || tileGrid.Length == 0) return Vector3.zero;
         return tileGrid[tileCoord.x, tileCoord.y].wPos;
     }
     void CreateGrid()
@@ -93,5 +102,14 @@ public class PathfindingTileGrid : MonoBehaviour
                 // Debug.Log(tileGrid[x, y].obstacleProximity); 
             }
         }
+    }
+    public float GetTileRadius()
+    {
+        return tileRadius;
+    }
+    public int GetTileCount()
+    {
+        if (tileGrid == null) return 0;
+        return tileGrid.Length;
     }
 }
