@@ -112,4 +112,16 @@ public class PathfindingTileGrid : MonoBehaviour
         if (tileGrid == null) return 0;
         return tileGrid.Length;
     }
+    public PathfindingTile[,] GetTileGrid()
+    {
+        return tileGrid;
+    }
+    public int GetHeight()
+    {
+        return gridSizeY;
+    }
+    public int GetWidth()
+    {
+        return gridSizeX;
+    }
 }
