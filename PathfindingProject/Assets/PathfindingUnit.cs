@@ -37,9 +37,15 @@ public class PathfindingUnit : MonoBehaviour
         }
     }
 
+    
     public void SetPath(List<int2> _path)
     {
         path = _path;
+    }
+    public void SetPath(int2[] _path)
+    {
+        path.Clear();
+        path.AddRange(_path);
     }
     private void OnDrawGizmos()
     {
